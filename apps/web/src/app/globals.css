@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html, body {
+  background-color: #0a0d11;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a333f #0f1319;
+}
+
+::selection {
+  background-color: #5b8def;
+  color: #0a0d11;
+}
+
+/* visible keyboard focus everywhere — this is an internal tool used all day, not a marketing page */
+:focus-visible {
+  outline: 2px solid #5b8def;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

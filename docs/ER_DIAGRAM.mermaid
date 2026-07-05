@@ -1,0 +1,129 @@
+erDiagram
+    USERS ||--o{ ORGANIZATION_MEMBERS : has
+    ORGANIZATIONS ||--o{ ORGANIZATION_MEMBERS : has
+    ORGANIZATIONS ||--o{ PROJECTS : owns
+    PROJECTS ||--o{ QUEUES : owns
+    PROJECTS ||--o{ BATCHES : owns
+    QUEUES ||--o| RETRY_POLICIES : has
+    QUEUES ||--o{ SCHEDULES : has
+    QUEUES ||--o{ JOBS : holds
+    QUEUES ||--o{ WORKER_LEASES : "leased by"
+    SCHEDULES ||--o{ JOBS : spawns
+    BATCHES ||--o{ JOBS : groups
+    JOBS ||--o{ JOB_EXECUTIONS : "has attempts"
+    JOBS ||--o| DEAD_LETTER_ENTRIES : "moved to"
+    JOB_EXECUTIONS ||--o{ JOB_LOGS : has
+    WORKERS ||--o{ JOBS : claims
+    WORKERS ||--o{ WORKER_HEARTBEATS : reports
+    WORKERS ||--o{ WORKER_LEASES : holds
+
+    USERS {
+        uuid id PK
+        text email
+        text password_hash
+        text name
+    }
+    ORGANIZATIONS {
+        uuid id PK
+        text name
+        text slug
+    }
+    ORGANIZATION_MEMBERS {
+        uuid id PK
+        uuid organization_id FK
+        uuid user_id FK
+        enum role
+    }
+    PROJECTS {
+        uuid id PK
+        uuid organization_id FK
+        text name
+        text api_key_hash
+    }
+    QUEUES {
+        uuid id PK
+        uuid project_id FK
+        text name
+        bool is_paused
+        int concurrency_limit
+        int default_priority
+    }
+    RETRY_POLICIES {
+        uuid id PK
+        uuid queue_id FK
+        enum strategy
+        int base_delay_ms
+        int max_delay_ms
+        int max_attempts
+        bool use_jitter
+    }
+    SCHEDULES {
+        uuid id PK
+        uuid queue_id FK
+        text cron_expression
+        jsonb payload
+        bool is_active
+        timestamptz next_run_at
+    }
+    BATCHES {
+        uuid id PK
+        uuid project_id FK
+        int job_count
+        int completed_count
+    }
+    JOBS {
+        uuid id PK
+        uuid queue_id FK
+        uuid schedule_id FK
+        uuid batch_id FK
+        uuid claimed_by_worker_id FK
+        text job_type
+        jsonb payload
+        text idempotency_key
+        enum status
+        int priority
+        timestamptz run_after
+        timestamptz scheduled_at
+        int attempt_count
+        timestamptz lease_expires_at
+    }
+    JOB_EXECUTIONS {
+        uuid id PK
+        uuid job_id FK
+        int attempt_number
+        uuid worker_id
+        enum status
+        text error_message
+        int duration_ms
+    }
+    JOB_LOGS {
+        uuid id PK
+        uuid execution_id FK
+        text level
+        text message
+    }
+    DEAD_LETTER_ENTRIES {
+        uuid id PK
+        uuid job_id FK
+        text final_error
+        bool requeued
+    }
+    WORKERS {
+        uuid id PK
+        text hostname
+        int pid
+        enum status
+        timestamptz last_heartbeat_at
+        int current_load
+    }
+    WORKER_HEARTBEATS {
+        uuid id PK
+        uuid worker_id FK
+        int load
+    }
+    WORKER_LEASES {
+        uuid id PK
+        uuid worker_id FK
+        uuid queue_id FK
+        int slots
+    }
