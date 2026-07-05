@@ -25,7 +25,17 @@ export default function LoginPage() {
     const form = new FormData(e.currentTarget);
     try {
       if (mode === "login") {
-        await login(String(form.get("email")), String(form.get("password")));
+        const email = String(form.get("email")).trim().toLowerCase();
+        const password = String(form.get("password"));
+
+        // Keep the public portfolio deployment useful without requiring the
+        // long-running API/worker infrastructure that cannot run on Vercel.
+        if (email === "demo@acme.dev" && password === "password123") {
+          enterDemo();
+          return;
+        }
+
+        await login(email, password);
       } else {
         await register(
           String(form.get("name")),
@@ -35,7 +45,11 @@ export default function LoginPage() {
         );
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong");
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "The live API is not connected. Use demo@acme.dev / password123 or Explore live demo."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -118,8 +132,8 @@ export default function LoginPage() {
                   <Field name="organizationName" label="Organization name" type="text" required />
                 </>
               )}
-              <Field name="email" label="Email" type="email" required />
-              <Field name="password" label="Password" type="password" required minLength={8} />
+              <Field name="email" label="Email" type="email" required defaultValue={mode === "login" ? "demo@acme.dev" : undefined} />
+              <Field name="password" label="Password" type="password" required minLength={8} defaultValue={mode === "login" ? "password123" : undefined} />
 
               {error && (
                 <div className="rounded-sm border border-status-failed/30 bg-status-failed/10 px-3 py-2 text-sm text-status-failed">
@@ -163,7 +177,7 @@ export default function LoginPage() {
   );
 }
 
-function Field({ name, label, type, required, minLength }: { name: string; label: string; type: string; required?: boolean; minLength?: number }) {
+function Field({ name, label, type, required, minLength, defaultValue }: { name: string; label: string; type: string; required?: boolean; minLength?: number; defaultValue?: string }) {
   return (
     <label className="block">
       <span className="mb-1 block text-2xs uppercase tracking-wide text-ink-500">{label}</span>
@@ -172,6 +186,7 @@ function Field({ name, label, type, required, minLength }: { name: string; label
         type={type}
         required={required}
         minLength={minLength}
+        defaultValue={defaultValue}
         className="w-full rounded-lg border border-white/10 bg-white/[0.035] px-3 py-2.5 text-sm text-ink-100 outline-none transition-all placeholder:text-ink-700 focus:border-status-queued/70 focus:bg-white/[0.05] focus:ring-2 focus:ring-status-queued/10"
       />
     </label>
