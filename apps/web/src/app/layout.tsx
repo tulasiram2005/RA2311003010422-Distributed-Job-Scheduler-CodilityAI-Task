@@ -3,8 +3,8 @@ import { AuthProvider } from "@/lib/auth";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Job Scheduler",
-  description: "Distributed job scheduling platform",
+  title: "OrbitFlow — Distributed Job Scheduler",
+  description: "Reliable distributed job scheduling, monitoring, and recovery.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

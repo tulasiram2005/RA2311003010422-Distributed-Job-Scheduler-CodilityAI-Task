@@ -30,15 +30,16 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 border-b border-base-700 px-4 py-4">
+      <div className="flex items-center gap-2 border-b border-white/[0.06] px-5 py-5">
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-completed opacity-50" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-status-completed" />
         </span>
-        <span className="font-mono text-sm font-medium text-ink-100">scheduler</span>
+        <span className="text-sm font-semibold tracking-tight text-white">Orbit<span className="text-status-queued">Flow</span></span>
       </div>
 
-      <nav className="flex-1 px-2 py-3">
+      <nav className="flex-1 px-3 py-5">
+        <p className="mb-3 px-3 text-[10px] font-medium uppercase tracking-[0.18em] text-ink-700">Workspace</p>
         {NAV.map((item) => {
           const active = pathname === item.href;
           const Icon = item.icon;
@@ -47,8 +48,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               key={item.href}
               href={item.href}
               onClick={onNavigate}
-              className={`mb-0.5 flex items-center gap-2.5 rounded-sm px-3 py-2 text-sm transition-colors ${
-                active ? "bg-base-700 text-ink-100" : "text-ink-500 hover:bg-base-800 hover:text-ink-300"
+              className={`mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all ${
+                active ? "border border-status-queued/15 bg-status-queued/10 text-white shadow-sm" : "border border-transparent text-ink-500 hover:bg-white/[0.035] hover:text-ink-300"
               }`}
             >
               <Icon size={15} strokeWidth={1.75} className={active ? "text-status-queued" : ""} />
@@ -59,8 +60,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       {user && (
-        <div className="border-t border-base-700 px-4 py-3">
-          <div className="mb-2 truncate font-mono text-2xs text-ink-500">{user.email}</div>
+        <div className="border-t border-white/[0.06] px-4 py-4">
+          <div className="mb-3 flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-blue-500 text-xs font-semibold text-white">{user.name?.[0] ?? "U"}</span>
+            <div className="min-w-0"><div className="truncate text-xs font-medium text-ink-300">{user.name}</div><div className="truncate text-[10px] text-ink-700">{user.email}</div></div>
+          </div>
           <button onClick={logout} className="text-2xs uppercase tracking-wide text-ink-700 hover:text-status-failed">
             sign out
           </button>
@@ -76,7 +80,7 @@ export function Sidebar() {
   return (
     <>
       {/* Desktop: always-visible fixed sidebar */}
-      <aside className="hidden h-full w-56 shrink-0 border-r border-base-700 bg-base-900 md:block">
+      <aside className="hidden h-full w-60 shrink-0 border-r border-white/[0.06] bg-base-900/80 backdrop-blur-xl md:block">
         <SidebarContent />
       </aside>
 

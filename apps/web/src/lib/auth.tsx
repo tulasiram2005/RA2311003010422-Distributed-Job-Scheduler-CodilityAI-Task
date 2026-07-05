@@ -15,6 +15,7 @@ interface AuthContextValue {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string, organizationName: string) => Promise<void>;
+  enterDemo: () => void;
   logout: () => void;
 }
 
@@ -59,7 +60,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/login");
   }
 
-  return <AuthContext.Provider value={{ user, loading, login, register, logout }}>{children}</AuthContext.Provider>;
+  function enterDemo() {
+    const demoUser = { id: "demo-user", name: "Alex Morgan", email: "demo@orbit.dev" };
+    window.localStorage.setItem("user", JSON.stringify(demoUser));
+    window.localStorage.setItem("scheduler-demo", "true");
+    setUser(demoUser);
+    router.push("/");
+  }
+
+  return <AuthContext.Provider value={{ user, loading, login, register, enterDemo, logout }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

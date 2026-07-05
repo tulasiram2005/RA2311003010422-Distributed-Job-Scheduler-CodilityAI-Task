@@ -9,6 +9,25 @@ import { api } from "@/lib/api";
 import { useAllQueuesLiveUpdates } from "@/lib/liveUpdates";
 import Link from "next/link";
 import { Cpu, Layers, Activity, AlertTriangle, Gauge } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+
+const DEMO_OVERVIEW: Overview = {
+  statusCounts: { COMPLETED: 1842, RUNNING: 24, QUEUED: 137, RETRYING: 8, FAILED: 12 },
+  throughputSeries: Array.from({ length: 12 }, (_, i) => ({
+    bucket: new Date(Date.now() - (11 - i) * 5 * 60_000).toISOString(),
+    completed: [72, 94, 88, 121, 108, 142, 134, 158, 149, 176, 165, 192][i],
+    failed: [2, 4, 3, 6, 4, 7, 3, 5, 6, 4, 3, 5][i],
+  })),
+  p95DurationMs: 284,
+  activeWorkers: 18,
+};
+
+const DEMO_QUEUES: Queue[] = [
+  { id: "demo-1", name: "email-delivery", is_paused: false, concurrency_limit: 24 },
+  { id: "demo-2", name: "image-processing", is_paused: false, concurrency_limit: 12 },
+  { id: "demo-3", name: "billing-events", is_paused: false, concurrency_limit: 8 },
+  { id: "demo-4", name: "daily-reports", is_paused: true, concurrency_limit: 4 },
+];
 
 interface Overview {
   statusCounts: Record<string, number>;
@@ -25,17 +44,21 @@ interface Queue {
 }
 
 export default function OverviewPage() {
+  const { user } = useAuth();
   const { data: overview } = useSWR("overview", () => api.get<Overview>("/api/metrics/overview"), { refreshInterval: 5000 });
   const { data: queuesRes } = useSWR("queues-overview", () => api.get<{ data: Queue[] }>("/api/queues"), { refreshInterval: 10000 });
   useAllQueuesLiveUpdates((queuesRes?.data ?? []).map((q) => q.id));
 
-  const counts = overview?.statusCounts ?? {};
+  const isDemo = user?.id === "demo-user";
+  const currentOverview = overview ?? (isDemo ? DEMO_OVERVIEW : undefined);
+  const currentQueues = queuesRes?.data ?? (isDemo ? DEMO_QUEUES : []);
+  const counts = currentOverview?.statusCounts ?? {};
   const backlog = (counts.QUEUED ?? 0) + (counts.SCHEDULED ?? 0) + (counts.RETRYING ?? 0);
   const inFlight = (counts.CLAIMED ?? 0) + (counts.RUNNING ?? 0);
-  const totalRecent = overview ? Object.values(overview.statusCounts).reduce((a, b) => a + b, 0) : 0;
+  const totalRecent = currentOverview ? Object.values(currentOverview.statusCounts).reduce((a, b) => a + b, 0) : 0;
   const failureRate = totalRecent > 0 ? (((counts.FAILED ?? 0) + (counts.DEAD ?? 0)) / totalRecent) * 100 : 0;
 
-  const chartData = (overview?.throughputSeries ?? []).map((p) => ({
+  const chartData = (currentOverview?.throughputSeries ?? []).map((p) => ({
     time: new Date(p.bucket).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     completed: p.completed,
     failed: p.failed,
@@ -43,14 +66,14 @@ export default function OverviewPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Fleet overview" description="Live status across every queue in this organization." />
+      <PageHeader title="Good morning, Alex" description="Your distributed fleet is healthy and processing normally." />
 
       <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <StatCard label="Active workers" value={overview?.activeWorkers ?? "—"} icon={Cpu} />
+        <StatCard label="Active workers" value={currentOverview?.activeWorkers ?? "—"} icon={Cpu} />
         <StatCard label="Backlog" value={backlog} sub="queued + scheduled + retrying" icon={Layers} />
         <StatCard label="In flight" value={inFlight} tone="text-status-running" icon={Activity} />
         <StatCard label="Failure rate" value={`${failureRate.toFixed(1)}%`} tone={failureRate > 5 ? "text-status-failed" : undefined} icon={AlertTriangle} />
-        <StatCard label="p95 duration" value={overview?.p95DurationMs ? `${overview.p95DurationMs}ms` : "—"} icon={Gauge} />
+        <StatCard label="p95 duration" value={currentOverview?.p95DurationMs ? `${currentOverview.p95DurationMs}ms` : "—"} icon={Gauge} />
       </div>
 
       <div className="mb-5 grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -106,11 +129,11 @@ export default function OverviewPage() {
           </Link>
         }
       >
-        {(queuesRes?.data ?? []).length === 0 ? (
+        {currentQueues.length === 0 ? (
           <EmptyState title="No queues yet" description="Create a queue to start submitting jobs." />
         ) : (
           <div className="divide-y divide-base-700">
-            {queuesRes!.data.slice(0, 6).map((q) => (
+            {currentQueues.slice(0, 6).map((q) => (
               <Link key={q.id} href={`/queues/${q.id}`} className="flex items-center justify-between py-2.5 hover:bg-base-800">
                 <div className="flex items-center gap-2">
                   <span className={`h-1.5 w-1.5 rounded-full ${q.is_paused ? "bg-ink-700" : "bg-status-completed"}`} />

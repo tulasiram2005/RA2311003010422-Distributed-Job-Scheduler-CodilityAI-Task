@@ -4,14 +4,14 @@ import { Inbox } from "lucide-react";
 
 export function Panel({ title, action, children }: { title?: string; action?: ReactNode; children: ReactNode }) {
   return (
-    <div className="rounded-md border border-base-700 bg-base-900">
+    <div className="glass-card overflow-hidden rounded-xl">
       {title && (
-        <div className="flex items-center justify-between border-b border-base-700 px-4 py-2.5">
+        <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-3.5">
           <h2 className="text-sm font-medium text-ink-100">{title}</h2>
           {action}
         </div>
       )}
-      <div className="p-4">{children}</div>
+      <div className="p-5">{children}</div>
     </div>
   );
 }
@@ -19,7 +19,7 @@ export function Panel({ title, action, children }: { title?: string; action?: Re
 export function StatCard({ label, value, sub, tone, icon }: { label: string; value: ReactNode; sub?: string; tone?: string; icon?: LucideIcon }) {
   const Icon = icon;
   return (
-    <div className="group rounded-md border border-base-700 bg-base-900 p-4 transition-colors hover:border-base-600">
+    <div className="glass-card group rounded-xl p-4 transition-all hover:-translate-y-0.5 hover:border-white/[0.14] hover:shadow-lg hover:shadow-black/20">
       <div className="flex items-center justify-between">
         <div className="text-2xs uppercase tracking-wide text-ink-500">{label}</div>
         {Icon && <Icon size={14} strokeWidth={1.75} className="text-ink-700 transition-colors group-hover:text-status-queued" />}
@@ -34,7 +34,7 @@ export function PageHeader({ title, description, action }: { title: string; desc
   return (
     <div className="mb-5 flex items-start justify-between">
       <div>
-        <h1 className="text-lg font-medium text-ink-100">{title}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-white">{title}</h1>
         {description && <p className="mt-0.5 text-sm text-ink-500">{description}</p>}
       </div>
       {action}
