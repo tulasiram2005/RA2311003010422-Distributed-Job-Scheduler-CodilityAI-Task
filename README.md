@@ -75,4 +75,9 @@ The test that matters most is `apps/api/src/__tests__/concurrentClaim.test.ts`: 
 
 ## Deployment
 
+https://web-ashen-tau-64.vercel.app/login - Live Link
+Creditials:
+Email: demo@acme.dev
+Password: password123
+
 See `docs/DEPLOYMENT.md`. Short version: the Next.js app and the API deploy to Vercel; the worker needs an always-on host (Railway/Render/Fly.io) since Vercel serverless functions can't run a persistent polling loop.
